@@ -3,21 +3,43 @@ import researchpy as rp
 import scipy.stats as stats
 
 def main():
-    df = pd.read_csv("export.csv")
-    df["most_common_user_name"] = (df["user_name"] == df["user_name"].mode()[0]).astype(int)
-    print(rp.crosstab(df["country"], df["most_common_user_name"]))
-    print("==================================================")
-    print(stats.chi2_contingency(rp.crosstab(df["country"],df["most_common_user_name"])))
+    # load the data
+    data_frame = pd.read_csv("export.csv")
+
+    # find the most used user name:
+    most_common_user_name = data_frame["user_name"].mode()[0]
+
+    # create bit map of the most common user name (true if the most common user name was used on that line)
+    data_frame["most_common_user_name"] = (data_frame["user_name"] == most_common_user_name).astype(bool)
+
+    # count how many times was it used or was not for each country 
+    print(rp.crosstab(data_frame["country"], data_frame["most_common_user_name"]))
+
     print("==================================================")
 
-    crosstab, test_result, expected = rp.crosstab(df["country"],df["most_common_user_name"],
+    # print result of chi2 test (lib scipy.stats) -> worse formatting, but includes degrees of freedom
+    print(stats.chi2_contingency(rp.crosstab(data_frame["country"], data_frame["most_common_user_name"])))
+
+    print("==================================================")
+
+    # get the results from researchpy
+    crosstab, test_result, expected = rp.crosstab(data_frame["country"],
+                                                  data_frame["most_common_user_name"],
                                                   test="chi-square",
                                                   expected_freqs=True,
                                                   prop="cell")
+    
+    # percentage of the cell to whole 
     print(crosstab)
+
     print("==================================================")
+
+    # results of the chi2 test
     print(test_result)
+
     print("==================================================")
+
+    # expected count for each cell
     print(expected)
 
 
